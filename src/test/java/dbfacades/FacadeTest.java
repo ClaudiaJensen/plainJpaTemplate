@@ -2,6 +2,7 @@ package dbfacades;
 
 import dbfacades.DemoFacade;
 import entity.Car;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -22,6 +23,7 @@ import org.junit.Test;
 public class FacadeTest {
   
 EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu-test", null);
+//EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu", null);
 
 DemoFacade facade = new DemoFacade(emf);
  
@@ -34,7 +36,7 @@ DemoFacade facade = new DemoFacade(emf);
       //Delete all, since some future test cases might add/change data
       em.createQuery("delete from Car").executeUpdate();
       //Add our test data
-      Car e1 = new Car("Volve");
+      Car e1 = new Car("Volvo");
       Car e2 = new Car("WW");
       em.persist(e1);
       em.persist(e2);
@@ -47,13 +49,48 @@ DemoFacade facade = new DemoFacade(emf);
   // Test the single method in the Facade
   @Test
   public void countEntities() {
-    EntityManager em = emf.createEntityManager();
-    try {
       long count = facade.countCars();
       Assert.assertEquals(2,count);
-    } finally {
-      em.close();
-    }
   }
+  
+  @Test
+  public void testGetAllCars()
+  {
+      List<Car> allCars = facade.getAllCars();
+      Assert.assertEquals(2, allCars.size());
+      Assert.assertEquals("Volvo", allCars.get(1).getMake());
+  }
+  
+  @Test
+  public void testGetCarsByMake()
+  {
+      List<Car> carsByMake = facade.getCarsByMake("Volvo");
+      Assert.assertEquals("Volvo", carsByMake.get(0).getMake());
+      //Assert.assertEquals("WW", carsByMake.get(1).getMake());
+      
+  }
+  
+  @Test
+  public void testGetCarById()
+  {
+      List<Car> cars = facade.getAllCars();
+      int id = cars.get(0).getId();
+      String make = cars.get(0).getMake();
+      Car car1 = facade.getCarById(id);
+      
+      Assert.assertEquals(make, car1.getMake());
+  }
+  
+  @Test
+  public void testDeleteCar()
+  {
+      List<Car> deleteCars = facade.getAllCars();
+      int id = deleteCars.get(0).getId();
+      String make = deleteCars.get(0).getMake();
+      Car car1 = facade.deleteCarByID(id);
+      
+      Assert.assertEquals(make, car1.getMake());
+  }
+          
   
 }
